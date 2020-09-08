@@ -1,0 +1,33 @@
+from tkinter import Tk 
+from tkinter.filedialog import askopenfilename as ask 
+import nmrglue #reads the tecmag .tnt file
+import other.pytnt.pytnt.processTNT as tnt #pytnt module can do delay tables
+import numpy as np
+import matplotlib.pyplot as plt
+import cmath
+plt.close('all') # close all figures
+
+## Import the VaryTau data
+root = Tk()
+root.attributes("-topmost", True) # forces dialog to be in focus
+#root.withdraw() # takes away root window, sometimes it glitches the "on-top" file dialog
+path = ask(filetypes = (("TNT files","*.tnt"),("all files","*.*")), parent=root) #gets file location
+root.destroy()
+
+tntclass = tnt.TNTfile(path) # using pytnt module    
+tntdelay = tntclass.DELAY
+#tecmagall = nmrglue.fileio.tecmag.read(path) #reads .tnt file
+tmparameters = tntclass.__getattr__ #This is the parameter list
+data = tntclass.DATA #This is the data
+
+
+#Some useful parameters:
+acq_time = tmparameters('acq_time')
+acq_points = tmparameters('acq_points')
+actual_npts = tmparameters('actual_npts')
+dwell = tmparameters('dwell')
+#check acq_time/dwell[0] = acq_points
+num1D = actual_npts[0]
+num2D = actual_npts[1]
+ns = (num1D/acq_points).astype(np.int64) #number of sensors
+t = np.linspace(0,acq_points,acq_points)*dwell[0]
